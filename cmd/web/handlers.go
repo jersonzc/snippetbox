@@ -11,6 +11,13 @@ import (
 	"unicode/utf8"
 )
 
+type Form struct {
+	Title       string
+	Content     string
+	Expires     int
+	FieldErrors map[string]string
+}
+
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
 
@@ -38,6 +45,9 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) snippetCreateForm(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData()
+	data.Form = Form{
+		Expires: 365,
+	}
 	app.render(w, http.StatusOK, "create.tmpl", data)
 }
 
@@ -56,27 +66,34 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fieldErrors := make(map[string]string)
+	form := Form{
+		Title:       title,
+		Content:     content,
+		Expires:     expires,
+		FieldErrors: map[string]string{},
+	}
 
 	// check title
 	if strings.TrimSpace(title) == "" {
-		fieldErrors["title"] = "This field cannot be blank"
+		form.FieldErrors["title"] = "This field cannot be blank"
 	} else if utf8.RuneCountInString(title) > 100 {
-		fieldErrors["title"] = "This field cannot be longer than 100 characters"
+		form.FieldErrors["title"] = "This field cannot be longer than 100 characters"
 	}
 
 	// check content
 	if strings.TrimSpace(content) == "" {
-		fieldErrors["content"] = "This field cannot be blank"
+		form.FieldErrors["content"] = "This field cannot be blank"
 	}
 
 	// check expires
 	if expires != 1 && expires != 7 && expires != 365 {
-		fieldErrors["expires"] = "This field must be either 1 or 7 or 365"
+		form.FieldErrors["expires"] = "This field must be either 1 or 7 or 365"
 	}
 
-	if len(fieldErrors) > 0 {
-		fmt.Fprint(w, fieldErrors)
+	if len(form.FieldErrors) > 0 {
+		data := app.newTemplateData()
+		data.Form = form
+		app.render(w, http.StatusOK, "create.tmpl", data)
 		return
 	}
 
