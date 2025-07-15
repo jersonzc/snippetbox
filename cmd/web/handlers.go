@@ -6,16 +6,15 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"snippetbox/internal/models"
+	"snippetbox/internal/validator"
 	"strconv"
-	"strings"
-	"unicode/utf8"
 )
 
 type Form struct {
-	Title       string
-	Content     string
-	Expires     int
-	FieldErrors map[string]string
+	Title   string
+	Content string
+	Expires int
+	validator.Validator
 }
 
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
@@ -67,33 +66,20 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	form := Form{
-		Title:       title,
-		Content:     content,
-		Expires:     expires,
-		FieldErrors: map[string]string{},
+		Title:   title,
+		Content: content,
+		Expires: expires,
 	}
 
-	// check title
-	if strings.TrimSpace(title) == "" {
-		form.FieldErrors["title"] = "This field cannot be blank"
-	} else if utf8.RuneCountInString(title) > 100 {
-		form.FieldErrors["title"] = "This field cannot be longer than 100 characters"
-	}
+	form.CheckField(validator.NotBlank(title), "title", "This field cannot be blank")
+	form.CheckField(validator.MaxChars(title, 100), "title", "This field cannot be longer than 100 characters")
+	form.CheckField(validator.NotBlank(content), "content", "This field cannot be blank")
+	form.CheckField(validator.PermittedInt(expires, 1, 7, 365), "expires", "This field must be either 1 or 7 or 365")
 
-	// check content
-	if strings.TrimSpace(content) == "" {
-		form.FieldErrors["content"] = "This field cannot be blank"
-	}
-
-	// check expires
-	if expires != 1 && expires != 7 && expires != 365 {
-		form.FieldErrors["expires"] = "This field must be either 1 or 7 or 365"
-	}
-
-	if len(form.FieldErrors) > 0 {
+	if !form.Valid() {
 		data := app.newTemplateData()
 		data.Form = form
-		app.render(w, http.StatusOK, "create.tmpl", data)
+		app.render(w, http.StatusUnprocessableEntity, "create.tmpl", data)
 		return
 	}
 
