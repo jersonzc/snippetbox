@@ -11,9 +11,9 @@ import (
 )
 
 type Form struct {
-	Title   string
-	Content string
-	Expires int
+	Title   string `form:"title"`
+	Content string `form:"content"`
+	Expires int    `form:"expires"`
 	validator.Validator
 }
 
@@ -57,24 +57,18 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	title := r.PostForm.Get("title")
-	content := r.PostForm.Get("content")
-	expires, err := strconv.Atoi(r.PostForm.Get("expires"))
+	var form Form
+
+	err = app.formDecoder.Decode(&form, r.PostForm)
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
 	}
 
-	form := Form{
-		Title:   title,
-		Content: content,
-		Expires: expires,
-	}
-
-	form.CheckField(validator.NotBlank(title), "title", "This field cannot be blank")
-	form.CheckField(validator.MaxChars(title, 100), "title", "This field cannot be longer than 100 characters")
-	form.CheckField(validator.NotBlank(content), "content", "This field cannot be blank")
-	form.CheckField(validator.PermittedInt(expires, 1, 7, 365), "expires", "This field must be either 1 or 7 or 365")
+	form.CheckField(validator.NotBlank(form.Title), "title", "This field cannot be blank")
+	form.CheckField(validator.MaxChars(form.Title, 100), "title", "This field cannot be longer than 100 characters")
+	form.CheckField(validator.NotBlank(form.Content), "content", "This field cannot be blank")
+	form.CheckField(validator.PermittedInt(form.Expires, 1, 7, 365), "expires", "This field must be either 1 or 7 or 365")
 
 	if !form.Valid() {
 		data := app.newTemplateData()
@@ -83,7 +77,7 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := app.snippets.Insert(title, content, expires)
+	id, err := app.snippets.Insert(form.Title, form.Content, form.Expires)
 	if err != nil {
 		app.serverError(w, err)
 		return
