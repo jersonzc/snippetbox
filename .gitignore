@@ -1,2 +1,5 @@
-.idea/
+# General
+tls/
 
+# IDE files
+.idea/
