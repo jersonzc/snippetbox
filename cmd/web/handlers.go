@@ -81,6 +81,16 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
 
+func (app *application) userSignupForm(w http.ResponseWriter, r *http.Request) {}
+
+func (app *application) userSignup(w http.ResponseWriter, r *http.Request) {}
+
+func (app *application) userLoginForm(w http.ResponseWriter, r *http.Request) {}
+
+func (app *application) userLogin(w http.ResponseWriter, r *http.Request) {}
+
+func (app *application) userLogout(w http.ResponseWriter, r *http.Request) {}
+
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	snippets, err := app.snippets.Latest()
 	if err != nil {
