@@ -11,11 +11,18 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-type Form struct {
+type FormSnippetCreate struct {
 	Title   string `form:"title"`
 	Content string `form:"content"`
 	Expires int    `form:"expires"`
 	validator.Validator
+}
+
+type FormUserSignup struct {
+	Name                string `form:"name"`
+	Email               string `form:"email"`
+	Password            string `form:"password"`
+	validator.Validator `form:"-"`
 }
 
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
@@ -45,14 +52,14 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) snippetCreateForm(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
-	data.Form = Form{
+	data.Form = FormSnippetCreate{
 		Expires: 365,
 	}
 	app.render(w, http.StatusOK, "create.tmpl", data)
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
-	var form Form
+	var form FormSnippetCreate
 	err := app.decodePostForm(r, &form)
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
@@ -83,7 +90,9 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) userSignupForm(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Display an HTML form for signing up a new user.")
+	data := app.newTemplateData(r)
+	data.Form = FormUserSignup{}
+	app.render(w, http.StatusOK, "signup.tmpl", data)
 }
 
 func (app *application) userSignup(w http.ResponseWriter, r *http.Request) {
