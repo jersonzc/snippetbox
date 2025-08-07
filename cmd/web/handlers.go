@@ -25,6 +25,12 @@ type FormUserSignup struct {
 	validator.Validator `form:"-"`
 }
 
+type FormUserLogin struct {
+	Email               string `form:"email"`
+	Password            string `form:"password"`
+	validator.Validator `form:"-"`
+}
+
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
 
@@ -135,7 +141,9 @@ func (app *application) userSignup(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) userLoginForm(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Display an HTML form for logging in a user.")
+	data := app.newTemplateData(r)
+	data.Form = FormUserLogin{}
+	app.render(w, http.StatusOK, "login.tmpl", data)
 }
 
 func (app *application) userLogin(w http.ResponseWriter, r *http.Request) {
