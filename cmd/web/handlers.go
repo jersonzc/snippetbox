@@ -3,11 +3,12 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"snippetbox/internal/models"
 	"snippetbox/internal/validator"
 	"strconv"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 type Form struct {
@@ -81,15 +82,25 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
 
-func (app *application) userSignupForm(w http.ResponseWriter, r *http.Request) {}
+func (app *application) userSignupForm(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Display an HTML form for signing up a new user.")
+}
 
-func (app *application) userSignup(w http.ResponseWriter, r *http.Request) {}
+func (app *application) userSignup(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Create a new user.")
+}
 
-func (app *application) userLoginForm(w http.ResponseWriter, r *http.Request) {}
+func (app *application) userLoginForm(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Display an HTML form for logging in a user.")
+}
 
-func (app *application) userLogin(w http.ResponseWriter, r *http.Request) {}
+func (app *application) userLogin(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Authenticate and login the user.")
+}
 
-func (app *application) userLogout(w http.ResponseWriter, r *http.Request) {}
+func (app *application) userLogout(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Logout the user.")
+}
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	snippets, err := app.snippets.Latest()
