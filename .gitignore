@@ -3,3 +3,6 @@ tls/
 
 # IDE files
 .idea/
+
+# Environment variables
+.env
