@@ -1,0 +1,33 @@
+services:
+  app:
+    depends_on:
+      db:
+        condition: service_healthy    
+    environment:
+      - PORT=${PORT}
+      - DSN=${DSN}
+    command: ["-addr=:${PORT}", "-dsn=${DSN}"]
+    build: .
+    ports:
+      - "${PORT}:${PORT}"
+  db:
+    image: mysql:9.3.0
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./schema/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PWD}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+
+volumes:
+  db-data:
